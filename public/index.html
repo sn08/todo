@@ -1,5 +1,5 @@
 
-<html>
+<html>        
     <head>
         <title>Todo</title>
         <style>
@@ -79,7 +79,7 @@
                     method: 'POST',
                     body: JSON.stringify(data),
                 }).then(function(res) {
-                   console.log(res)
+                  // console.log(res)
                 }).catch(function(err){
                     console.log(err)
                 });
@@ -94,6 +94,10 @@
                 })
                 .then(function(data){
                 let result = '<ul class="mycssdropdown">';
+                if(data==null)
+                {
+                    return
+                }
                 data.map(function(todo) { 
                     result +=
                         `<li>

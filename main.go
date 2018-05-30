@@ -73,6 +73,7 @@ func newTodo(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println(t.Name, t.Status)
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
 		log.Println(err)
