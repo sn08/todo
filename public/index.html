@@ -1,0 +1,121 @@
+
+<html>
+    <head>
+        <title>Todo</title>
+        <style>
+        div h1{
+            text-decoration: blueviolet;
+            font-style: oblique;
+            padding: 50px 30px; 
+            position:relative;
+            left:33%;
+        }
+        .todoapp {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            background: #fff;
+            width: 250px;   /*250px*/
+            padding: 20px 5px;   /*30*/
+            left: 20%;
+            position:relative;
+        }
+        :focus{
+            outline:none;
+        }
+        .card{
+            margin:auto;
+            width:50%;
+            position:relative;
+        }
+
+        .mycssdropdown li label span{
+            display:block;
+        }
+        
+        ul {
+            list-style-type: none;
+        }
+
+        .radio{
+            white-space:nowrap;
+        }
+
+        .todoapp .new-todo{
+            width: 90%;
+            height: 5%;
+            left: 20px;
+            margin:auto;
+        }
+
+        </style>
+    </head>
+    
+    <body>
+        <div class="card">
+            <h1>Todos</h1>
+                <form class="todoapp">
+                    <input class="new-todo" id="do" type="text" placeholder="What needs to be done?" autofocus>
+                    <p id="display"></p>
+                </form>
+        </div>
+        <script>
+            show()
+            var input = document.querySelector('#do');
+            input.addEventListener("keyup", function(event) {
+                //event.preventDefault();
+                if (event.keyCode === 13) {
+                    console.log("input",input.value)
+                    var data=event.target.value
+                    console.log("data",data)
+                    document.getElementById('do').value = "";
+                    new_todo(data)
+                    if(data=="")
+                    {
+                        console.log("no data")
+                    }
+                }
+            });
+
+            function new_todo(name){
+                let data = {
+                    Name: name,
+                    Status: "Pending"
+                }
+                
+                fetch('/newtodo', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res) {
+                   console.log(res)
+                }).catch(function(err){
+                    console.log(err)
+                });
+                show()
+            }
+
+            function show(){
+                fetch('/showtodo', {
+                    method: 'GET',
+                }).then(function(res) {
+                    return res.json()
+                })
+                .then(function(data){
+                let result = '<ul class="mycssdropdown">';
+                data.map(function(todo) { 
+                    result +=
+                        `<li>
+                            <div class="radio">
+                                <input type="radio" name="avalue" value="`+todo.Name+`">
+                                <label>`+todo.Name+`</label>
+                            </div>`
+                    console.log(todo)
+                })
+                result += `</ul>`
+                document.getElementById('display').innerHTML = result;
+                }).catch(function(err){
+                    console.log(err)
+                });
+            }
+
+        </script>
+    </body>
+</html>
