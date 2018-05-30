@@ -52,26 +52,20 @@
     <body>
         <div class="card">
             <h1>Todos</h1>
-                <form class="todoapp">
+                <div class="todoapp">
                     <input class="new-todo" id="do" type="text" placeholder="What needs to be done?" autofocus>
                     <p id="display"></p>
-                </form>
+                </div>
         </div>
         <script>
             show()
             var input = document.querySelector('#do');
             input.addEventListener("keyup", function(event) {
-                //event.preventDefault();
-                if (event.keyCode === 13) {
-                    console.log("input",input.value)
-                    var data=event.target.value
+                if (event.key === 'Enter') {
+                    var data = event.target.value
                     console.log("data",data)
                     document.getElementById('do').value = "";
                     new_todo(data)
-                    if(data=="")
-                    {
-                        console.log("no data")
-                    }
                 }
             });
 
