@@ -35,23 +35,45 @@
             list-style-type: none;      /*remove bulletins*/
         }
 
-        input[type=radio] {  /*styling of radio button*/
-            border: 0px;
-            width: 50%;
-            height: 1.5em;
-            white-space:nowrap;
-            margin-left: -30px;
-            margin-top: 4px;
+        .radio{
+            min-height: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
 
         .radio label{
-            font-size: 20px;
-            margin-top: -35px;
+            font-size: 25px;
+            margin-left: -20px;
+            margin-top: 10px;
+        }
+
+        .radio input[type="radio"]{  /*styling of radio button*/
+            border: 0px;
+            width: 50%;
+            height: 1.5em;
+            float: left;
+            margin-left: -20px;
         }
 
         input{ /*font size in input text area*/
             border:none;
             font-size: 20px;
+        }
+
+        #exit{
+            display: none;
+        }
+
+
+        .radio:hover #exit {
+            float:right;
+            display: block;  
+            margin-top: -2px;
+        }
+
+        input[id=radio]:checked~#name{  /*strike through onclick radio*/
+            text-decoration: line-through;
+            color:grey;
         }
 
         </style>
@@ -104,24 +126,90 @@
                 let result = '<ul class="mycssdropdown">';
                 if(data==null)
                 {
+                    result+=``;
+                    document.getElementById('display').innerHTML = result;
                     return
-                }
+                }            /*<label id="name" ondblclick="update(${todo.ID})"> ${todo.Name} </label>*/
+                             /*<input type="text" id="textbox" ondblclick="update(${todo.ID})" value="${todo.Name}" readonly>*/
                 data.map(function(todo) { 
                     result +=
                         `<hr><li>
                             <div class="radio">
-                                <input type="radio" name="avalue" value="`+todo.Name+`">
-                                <label>`+todo.Name+`</label>
+                                <input type="radio" id="radio" name="avalue" value="${todo.Name}">
+                                <label id="name"> ${todo.Name} </label>
+                                <label id="exit" onclick="deletetodo(${todo.ID})">&#10005;</label> 
                             </div></li>`
                                                         
                     console.log(todo)
                 })
                 result += `</ul>`
                 document.getElementById('display').innerHTML = result;
+                }).then(function(data){
+                  /* if(document.querySelector("#radio").checked == true)
+                   {
+                       onclick="deselect()"
+                   }
+                   function deselect()
+                   {
+                        var ele = document.querySelector("#name");
+                        ele.style.setProperty("text-decoration", "none");
+                        document.querySelector("#radio").checked = false;
+                   }*/
+                    
                 }).catch(function(err){
                     console.log(err)
                 });
             }
+
+            function deletetodo(ID){
+                let data = {
+                    ID: ID
+                }
+                fetch('/deletetodo', {  
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res){
+                    return res.json()
+                }).then(function(data){
+                    console.log("delete successful")
+                    show()
+                }).catch(function(err){
+                        console.log(err)
+                    });
+            }
+
+            /*function update(ID){
+                console.log("id",ID)
+                var y = document.querySelector('#radio');
+                y.style.display='none';
+                var x = document.querySelector("#textbox");
+                x.removeAttribute('readonly');
+                    focus()
+                x.addEventListener("keyup", function(event) {
+                    if (event.key === 'Enter') {
+                        var data = event.target.value
+                        console.log("data",data)
+                        var name = data
+                    }
+                });
+                console.log(name)
+
+                let data = {
+                    Name:name,
+                    ID: ID
+                }
+                fetch('/updatetodo',{
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res){
+                    return res.json()
+                })
+                .then(function(data){
+                    show();
+                }).catch(function(err){
+                        console.log(err)
+                });
+            }*/
 
         </script>
     </body>

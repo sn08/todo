@@ -12,6 +12,7 @@ import (
 
 //Todo is todo
 type Todo struct {
+	ID     int
 	Name   string
 	Status string
 }
@@ -39,6 +40,7 @@ func init() {
 func main() {
 	http.HandleFunc("/newtodo", newTodo)
 	http.HandleFunc("/showtodo", showTodos)
+	http.HandleFunc("/deletetodo", deleteTodo)
 	http.Handle("/", http.FileServer(http.Dir("./public")))
 
 	err := http.ListenAndServe(":8080", nil) //as it's dynamic we have to declare a separate handle
@@ -89,10 +91,12 @@ func showTodos(w http.ResponseWriter, r *http.Request) {
 	log.Println(err)
 
 	for rows.Next() {
+		var ID int
 		var Name string
 		var Status string
-		err = rows.Scan(&Name, &Status)
+		err = rows.Scan(&ID, &Name, &Status)
 		log.Println(err)
+		todo.ID = ID
 		todo.Name = Name
 		todo.Status = Status
 		todos = append(todos, todo)
@@ -106,4 +110,29 @@ func showTodos(w http.ResponseWriter, r *http.Request) {
 	}
 	//write onto header
 	w.Write(todolistBytes)
+}
+
+func deleteTodo(w http.ResponseWriter, r *http.Request) {
+	showTodos(w, r)
+	var t Todo
+	err := json.NewDecoder(r.Body).Decode(&t)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	stmt, err := db.Prepare("DELETE FROM todo WHERE id=$1")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	res, err := stmt.Exec(t.ID)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	count, err := res.RowsAffected()
+	if err == nil {
+		fmt.Printf("No of todos deleted is %d and id is %d", count, t.ID)
+	}
 }
