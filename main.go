@@ -88,7 +88,7 @@ func showTodos(w http.ResponseWriter, r *http.Request) {
 	var todos []Todo
 	todo := Todo{}
 
-	rows, err := db.Query("SELECT * FROM todo")
+	rows, err := db.Query("SELECT * FROM todo order by ID ASC")
 	log.Println(err)
 
 	for rows.Next() {
