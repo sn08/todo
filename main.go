@@ -42,6 +42,8 @@ func main() {
 	http.HandleFunc("/showtodo", showTodos)
 	http.HandleFunc("/deletetodo", deleteTodo)
 	http.HandleFunc("/updatestatus", updateStatus)
+	http.HandleFunc("/updatetodo", updateTodo)
+	http.HandleFunc("/clrcomp", clearCompleted)
 	http.Handle("/", http.FileServer(http.Dir("./public")))
 
 	err := http.ListenAndServe(":8080", nil) //as it's dynamic we have to declare a separate handle
@@ -157,5 +159,47 @@ func updateStatus(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("status", t.Status)
 	fmt.Printf("Id of updated todo is %d", t.ID)
+}
+
+func updateTodo(w http.ResponseWriter, r *http.Request) {
+	var t Todo
+	err := json.NewDecoder(r.Body).Decode(&t)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("decode done")
+	stmt, err := db.Prepare("UPDATE todo SET Name=$1 WHERE ID=$2")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("update prepare done")
+	_, err = stmt.Exec(t.Name, t.ID)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Printf("Id of updated todo is %d", t.ID)
+}
+
+func clearCompleted(w http.ResponseWriter, r *http.Request) {
+	showTodos(w, r)
+	stmt, err := db.Prepare("DELETE FROM todo WHERE status=$1")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	res, err := stmt.Exec("Completed")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	count, err := res.RowsAffected()
+	if err == nil {
+		fmt.Printf("No of todos deleted is %d", count)
+	}
 }

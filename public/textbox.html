@@ -12,7 +12,7 @@
         .todoapp { /*shadow for border*/
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
             background: #fff;
-            width: 350px;   /*250*/
+            width: 250px;   
             padding: 20px 5px;   /*30*/
             left: 20%;
             position:relative;
@@ -33,22 +33,37 @@
             min-height: 20px;
             margin-top: 10px;
             margin-bottom: 10px;
+            display: flex; /* 2. display flex to the rescue */
+            flex-direction: row;
         }
         .radio label{
             font-size: 25px;
-            margin-left: -50px;
+            margin-left: -20px;
             margin-top: 10px;
-            word-wrap: break-word;
-            max-width: 200px;
+            display: block;
+        }
+        .radio input{
+            display: block;
+            margin-left: -30px; 
+            /*position: relative;
+            left: 12px;*/
         }
         .radio input[type="checkbox"]{  /*styling of radio button*/
             border: 0px;
+          /*  position: relative;*/
             width: 50%;
             height: 1.5em;
+         /*   left: 10px;*/
             float: left;
-            margin-left: -50px;
+            margin-left: -40px;   
         }
         input{ /*font size in input text area*/
+            font-size: 20px;
+        }
+        .radio textarea{
+            overflow-wrap: break-word;
+            word-break: break-all;
+            width: 150px;
             border: none;
             font-size: 20px;
         }
@@ -56,13 +71,14 @@
             display: none;
         }
         .radio:hover #exit {
-            float: right;
+            float:right;
             display: block;  
             margin-top: -2px;
         }
-        .edit-input {
-            display: none;
-        }
+        /*input[id=radio]:checked~#name{  /*strike through onclick radio*/
+           /* text-decoration: line-through;
+            color:grey;
+        }*/
         </style>
     </head>
     
@@ -70,10 +86,8 @@
         <div class="card">
             <h1>Todos</h1>
                 <div class="todoapp">
-                    <input class="new-todo" id="do" type="text" size="30" placeholder="What needs to be done?" autofocus>
+                    <input class="new-todo" id="do" type="text" placeholder="What needs to be done?" autofocus>
                     <p id="display"></p>
-                    <div><button id="clear" style="float:right;" onclick=clrcomp()>Clear Completed</button></div>
-                    <br>
                 </div>
         </div>
         <script>
@@ -82,19 +96,17 @@
             input.addEventListener("keyup", function(event) {
                 if (event.key === 'Enter') {
                     var data = event.target.value
-                    if(data!=""){
                     console.log("data",data)
                     document.getElementById('do').value = "";
                     new_todo(data)
-                    }
                 }
             });
             
             function ShowHideLabel(radio,ID) {
                 console.log("show called")
-                var st = document.querySelector('#todoname');
                 if(radio.checked==true)
                 {
+                    var st = document.querySelector('#name');
                     st.style.setProperty("text-decoration", "line-through");
                     st.style.setProperty("color", "grey");
                     console.log("id",ID)
@@ -102,11 +114,25 @@
                     updatestatus(ID,status)
                 }
                 else{
+                    var st = document.querySelector('#name');
                     st.style.setProperty("text-decoration", "none");
                     console.log("id",ID)
                     var status = "Pending"
                     updatestatus(ID,status)
                 }
+            }
+
+            function AutoGrowTextArea(textField)
+            {
+            if (textField.clientHeight < textField.scrollHeight)
+            {
+                textField.style.height = textField.scrollHeight + "px";
+                if (textField.clientHeight < textField.scrollHeight)
+                {
+                textField.style.height = 
+                    (textField.scrollHeight * 2 - textField.clientHeight) + "px";
+                }
+            }
             }
 
             function new_todo(name){
@@ -125,36 +151,38 @@
                 });
                 setTimeout(show, 165);
             }
-
             function show(){
                 fetch('/showtodo', {
                     method: 'GET',
                 }).then(function(res) {
                     return res.json()
-                }).then(function(data){
+                })
+                .then(function(data){
                 let result = '<ul class="mycssdropdown">';
                 if(data==null)
                 {
                     result+=``;
                     document.getElementById('display').innerHTML = result;
                     return
-                }            
+                }            /*<label id="name" ondblclick="update(${todo.ID})"> ${todo.Name} </label>*/
+                             /*<input type="text" id="textbox" ondblclick="update(${todo.ID})" value="${todo.Name}" readonly>*/
                 data.map(function(todo) { 
                     result +=
                         `<hr><li>
                             <div class="radio">`
                                 if(todo.Status=="Pending"){
                                     result +=
-                                `<input type="checkbox" id="radio${todo.ID}" name="avalue" value="${todo.Name}" onclick="ShowHideLabel(this,${todo.ID})">
-                                <label id="todoname" ondblclick="editlabel(this,${todo.ID})"> ${todo.Name} </label>
-                                <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
+                                `<input type="checkbox" id="radio" name="avalue" value="${todo.Name}" onclick="ShowHideLabel(this,${todo.ID})"/>
+                                <textarea id="name" cols="30" rows="1" onkeyup="AutoGrowTextArea(this)" style="overflow:hidden" readonly>${todo.Name}</textarea>`
+                                /*<input type="text" id="name" value="${todo.Name}" readonly/>`*/
                                 }
                                 else{
                                     result +=
-                                `<input type="checkbox" id="radio${todo.ID}" name="avalue" value="${todo.Name}" checked="checked" onclick="ShowHideLabel(this,${todo.ID})">
-                                <label id="todoname" style="text-decoration:line-through;color:grey;" ondblclick="editlabel(this,${todo.ID})">${todo.Name} </label>
-                                <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
+                                `<input type="checkbox" id="radio" name="avalue" value="${todo.Name}" checked="checked" onclick="ShowHideLabel(this,${todo.ID})"/>
+                                <textarea id="name" style="text-decoration:line-through;color:grey;" readonly>${todo.Name}</textarea>`
+                                /*<input type="text" id="name" style="text-decoration:line-through;color:grey;" value="${todo.Name}" readonly/>`*/
                                 }
+
                                 result += `<label id="exit" onclick="deletetodo(${todo.ID})">&#10005;</label>
                             </div></li>`
                                                         
@@ -166,7 +194,6 @@
                     console.log(err)
                 });
             }
-
             function deletetodo(ID){
                 let data = {
                     ID: ID
@@ -183,20 +210,6 @@
                         console.log(err)
                     });
             }
-
-            function clrcomp(){
-                fetch('/clrcomp', {
-                    method: 'GET',
-                }).then(function(res) {
-                    return res.json()
-                }).then(function(data){
-                    console.log("delete successful")
-                    show()
-                }).catch(function(err){
-                        console.log(err)
-                    });
-            }
-
             function updatestatus(ID,status){
                 console.log("id",ID)
                 let data = {
@@ -214,48 +227,37 @@
                         console.log(err)
                 });
             }
-
-            function editlabel(todoname,ID){
-                console.log("edit label called")
-                var r=document.querySelector('#radio'+ID);
-                r.style.display='none';
-                document.querySelector('#exit').style.display='none';
-                todoname.style.display='none';
-                todoname.style.opacity=0;
-                var x = document.querySelector('#edit'+ID);
-                x.style.display='block';
-                x.style.highlight="block";     //display border
-                x.style.boxShadow = "0 0 5px grey";
-                x.style.padding = "3px 1px 3px 3px";
-                x.style.margin = "5px 1px 3px 0px";  
-                x.style.border = "1px solid grey";
-                x.focus();
+            /*function update(ID){
+                console.log("id",ID)
+                var y = document.querySelector('#radio');
+                y.style.display='none';
+                var x = document.querySelector("#textbox");
+                x.removeAttribute('readonly');
+                    focus()
                 x.addEventListener("keyup", function(event) {
-                    console.log("event listener called")
                     if (event.key === 'Enter') {
                         var data = event.target.value
                         console.log("data",data)
                         var name = data
-                        if(name!=""){
-                            console.log(name)
-                            let data = {
-                                Name:name,
-                                ID: ID
-                            }
-                            fetch('/updatetodo',{
-                                method: 'POST',
-                                body: JSON.stringify(data),
-                            }).then(function(res){
-                                //return res.json()
-                            }).then(function(data){
-                                show();
-                            }).catch(function(err){
-                                    console.log(err)
-                            });
-                        }
                     }
                 });
-            }
+                console.log(name)
+                let data = {
+                    Name:name,
+                    ID: ID
+                }
+                fetch('/updatetodo',{
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res){
+                    return res.json()
+                })
+                .then(function(data){
+                    show();
+                }).catch(function(err){
+                        console.log(err)
+                });
+            }*/
         </script>
     </body>
 </html>
