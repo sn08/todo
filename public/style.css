@@ -1,0 +1,72 @@
+body{
+    background: rgb(252, 226, 200); 
+}   
+    div h1{  /*design for heading*/
+    color: peru;
+    font-style: oblique;
+    padding: 50px 30px; 
+    position:relative;
+    left:33%;
+}
+.todoapp { /*shadow for border*/
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    background-color: #fff;
+    width: 350px;   /*250*/
+    padding: 20px 5px;   /*30*/
+    left: 20%;
+    position:relative;
+}
+:focus{  /*to remove highlight*/
+    outline:none;
+}
+.card{
+    margin:auto;
+    width:50%;
+    position:relative;
+}
+ul {
+    padding:0;       /*remove indent*/
+    list-style-type: none;      /*remove bulletins*/
+}
+.radio{
+    min-height: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.radio label{
+    font-size: 25px;
+    margin-left: -50px;
+    margin-top: 10px;
+    word-wrap: break-word;
+    max-width: 200px;
+}
+.radio input[type="checkbox"]{  /*styling of radio button*/
+    border: 0px;
+    width: 50%;
+    height: 1.5em;
+    float: left;
+    margin-left: -50px;
+}
+input{ /*font size in input text area*/
+    border: none;
+    font-size: 20px;
+}
+#exit{
+    display: none;
+    color: peru;
+}
+.radio:hover #exit {
+    float: right;
+    display: block;  
+    margin-top: -2px;
+}
+.edit-input {
+    display: none;
+}
+#clear{
+    border:none;
+    background: #fff;
+}
+#clear:hover{
+    text-decoration: underline;
+}

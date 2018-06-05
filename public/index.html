@@ -1,69 +1,7 @@
 <html>        
     <head>
         <title>Todo</title>
-        <style>
-        div h1{  /*design for heading*/
-            text-decoration: blueviolet;
-            font-style: oblique;
-            padding: 50px 30px; 
-            position:relative;
-            left:33%;
-        }
-        .todoapp { /*shadow for border*/
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            background: #fff;
-            width: 350px;   /*250*/
-            padding: 20px 5px;   /*30*/
-            left: 20%;
-            position:relative;
-        }
-        :focus{  /*to remove highlight*/
-            outline:none;
-        }
-        .card{
-            margin:auto;
-            width:50%;
-            position:relative;
-        }
-        ul {
-            padding:0;       /*remove indent*/
-            list-style-type: none;      /*remove bulletins*/
-        }
-        .radio{
-            min-height: 20px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-        .radio label{
-            font-size: 25px;
-            margin-left: -50px;
-            margin-top: 10px;
-            word-wrap: break-word;
-            max-width: 200px;
-        }
-        .radio input[type="checkbox"]{  /*styling of radio button*/
-            border: 0px;
-            width: 50%;
-            height: 1.5em;
-            float: left;
-            margin-left: -50px;
-        }
-        input{ /*font size in input text area*/
-            border: none;
-            font-size: 20px;
-        }
-        #exit{
-            display: none;
-        }
-        .radio:hover #exit {
-            float: right;
-            display: block;  
-            margin-top: -2px;
-        }
-        .edit-input {
-            display: none;
-        }
-        </style>
+        <link rel="stylesheet" href="style.css">
     </head>
     
     <body>
@@ -72,10 +10,13 @@
                 <div class="todoapp">
                     <input class="new-todo" id="do" type="text" size="30" placeholder="What needs to be done?" autofocus>
                     <p id="display"></p>
-                    <div><button id="clear" style="float:right;" onclick=clrcomp()>Clear Completed</button></div>
-                    <br>
+                    <div>
+                        <div id="count" style="float:left;"></div>
+                        <button id="clear" style="float:right;display:none" onclick=clrcomp()>Clear Completed</button>
+                    </div>
                 </div>
-        </div>
+        </div><br><br>
+        <footer align="center" style="font-size:14px;color:rgb(235, 175, 116)">Double click to edit todo</footer>
         <script>
             show()
             var input = document.querySelector('#do');
@@ -97,12 +38,14 @@
                 {
                     st.style.setProperty("text-decoration", "line-through");
                     st.style.setProperty("color", "grey");
+                    document.querySelector("#clear").style.display="block";
                     console.log("id",ID)
                     var status = "Completed"
                     updatestatus(ID,status)
                 }
                 else{
                     st.style.setProperty("text-decoration", "none");
+                    document.querySelector("#clear").style.display="none";
                     console.log("id",ID)
                     var status = "Pending"
                     updatestatus(ID,status)
@@ -136,9 +79,11 @@
                 if(data==null)
                 {
                     result+=``;
+                    document.querySelector('#count').style.display='none';
                     document.getElementById('display').innerHTML = result;
                     return
-                }            
+                }  
+                var count=0;          
                 data.map(function(todo) { 
                     result +=
                         `<hr><li>
@@ -148,6 +93,7 @@
                                 `<input type="checkbox" id="radio${todo.ID}" name="avalue" value="${todo.Name}" onclick="ShowHideLabel(this,${todo.ID})">
                                 <label id="todoname" ondblclick="editlabel(this,${todo.ID})"> ${todo.Name} </label>
                                 <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
+                                count++;
                                 }
                                 else{
                                     result +=
@@ -159,9 +105,12 @@
                             </div></li>`
                                                         
                     console.log(todo)
+                    console.log("no of entries",count)
                 })
                 result += `</ul>`
-                document.getElementById('display').innerHTML = result;
+                document.querySelector('#display').innerHTML = result;
+                document.querySelector('#count').innerHTML = count+" items left";
+                document.querySelector('#count').style.display='block';
                 }).catch(function(err){
                     console.log(err)
                 });
