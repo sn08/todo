@@ -1,7 +1,7 @@
 body{
     background: rgb(252, 226, 200); 
 }   
-    div h1{  /*design for heading*/
+div h1{  /*design for heading*/
     color: peru;
     font-style: oblique;
     padding: 50px 30px; 
@@ -31,11 +31,12 @@ ul {
 .radio{
     min-height: 20px;
     margin-top: 10px;
+    margin-left: 50px;
     margin-bottom: 10px;
 }
 .radio label{
     font-size: 25px;
-    margin-left: -50px;
+    margin-left: -50px;   /*-50*/
     margin-top: 10px;
     word-wrap: break-word;
     max-width: 200px;
@@ -45,17 +46,17 @@ ul {
     width: 50%;
     height: 1.5em;
     float: left;
-    margin-left: -50px;
+    margin-left: -100px;
 }
 input{ /*font size in input text area*/
     border: none;
     font-size: 20px;
 }
-#exit{
+.exit{
     display: none;
     color: peru;
 }
-.radio:hover #exit {
+.radio:hover .exit {
     float: right;
     display: block;  
     margin-top: -2px;

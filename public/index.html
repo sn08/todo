@@ -101,7 +101,7 @@
                                 <label id="todoname" style="text-decoration:line-through;color:grey;" ondblclick="editlabel(this,${todo.ID})">${todo.Name} </label>
                                 <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
                                 }
-                                result += `<label id="exit" onclick="deletetodo(${todo.ID})">&#10005;</label>
+                                result += `<label id="exit${todo.ID}" class="exit" onclick="deletetodo(${todo.ID})">&#10005;</label>
                             </div></li>`
                                                         
                     console.log(todo)
@@ -168,9 +168,8 @@
                 console.log("edit label called")
                 var r=document.querySelector('#radio'+ID);
                 r.style.display='none';
-                document.querySelector('#exit').style.display='none';
+                document.querySelector('#exit'+ID).style.display='none';
                 todoname.style.display='none';
-                todoname.style.opacity=0;
                 var x = document.querySelector('#edit'+ID);
                 x.style.display='block';
                 x.style.highlight="block";     //display border
