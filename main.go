@@ -6,15 +6,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 	// postgres driver
 	_ "github.com/lib/pq" //just for side-effects (initialization)
 )
 
 //Todo is todo
 type Todo struct {
-	ID     int
-	Name   string
-	Status string
+	ID           int
+	Name         string
+	Status       string
+	LastModified time.Time
 }
 
 var db *sql.DB
@@ -44,6 +46,7 @@ func main() {
 	http.HandleFunc("/updatestatus", updateStatus)
 	http.HandleFunc("/updatetodo", updateTodo)
 	http.HandleFunc("/clrcomp", clearCompleted)
+	http.HandleFunc("/newtodoup", newTodoup)
 	http.Handle("/", http.FileServer(http.Dir("./public")))
 
 	err := http.ListenAndServe(":8080", nil) //as it's dynamic we have to declare a separate handle
@@ -97,11 +100,13 @@ func showTodos(w http.ResponseWriter, r *http.Request) {
 		var ID int
 		var Name string
 		var Status string
-		err = rows.Scan(&ID, &Name, &Status)
+		var LastModified time.Time
+		err = rows.Scan(&ID, &Name, &Status, &LastModified)
 		log.Println(err)
 		todo.ID = ID
 		todo.Name = Name
 		todo.Status = Status
+		todo.LastModified = LastModified
 		todos = append(todos, todo)
 	}
 	//marshal
@@ -201,5 +206,39 @@ func clearCompleted(w http.ResponseWriter, r *http.Request) {
 	count, err := res.RowsAffected()
 	if err == nil {
 		fmt.Printf("No of todos deleted is %d", count)
+	}
+}
+
+func newTodoup(w http.ResponseWriter, r *http.Request) {
+	// JSON format(unmarshal)
+	// validate todo
+	// save it to DB
+	var t []Todo
+	//var k Todo
+	err := json.NewDecoder(r.Body).Decode(&t)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	stmt, err := db.Prepare("INSERT INTO todo(Name,Status) VALUES ($1, $2)")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, k := range t {
+		fmt.Println(k)
+		res, err := stmt.Exec(k.Name, k.Status)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(k.Name, k.Status)
+		rowCnt, err := res.RowsAffected()
+		if err != nil {
+			log.Println(err)
+		}
+		log.Printf("Rows affected = %d\n", rowCnt)
 	}
 }
