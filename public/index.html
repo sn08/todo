@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>        
+    <head>
+        <title>Todo</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    
+    <body>
+        <div class="card">
+            <h1>Todos</h1>
+                <div class="todoapp">
+                    <input class="new-todo" id="do" type="text" size="30" placeholder="What needs to be done?" autofocus>
+                    <p id="display"></p>
+                    <p id="displayoff"></p>
+                    <div>
+                        <div id="count" style="float:left;"></div>
+                        <button id="clear" style="float:right;display:none" onclick=clrcomp()>Clear Completed</button>
+                    </div>
+                </div>
+        </div><br><br>
+        <footer align="center" style="font-size:14px;color:rgb(235, 175, 116)">Double click to edit todo</footer>
+        <script>
+            var index=0
+            show()
+            var input = document.querySelector('#do');
+            input.addEventListener("keyup", function(event) {
+                if (event.key === 'Enter') {
+                    var data = event.target.value
+                    if(data!=""){
+                    console.log("data",data)
+                    document.getElementById('do').value = "";
+                    new_todo(data)
+                    }
+                }
+            });
+            window.addEventListener('online', function(event) { 
+                var todo = []; 
+                for (var i = 0; i<localStorage.length; i++) {
+                    todo[i] = JSON.parse(localStorage.getItem(localStorage.key(i)));
+
+                }
+                fetch('/newtodoup', {
+                    method: 'POST',
+                    body: JSON.stringify(todo),
+                }).then(function(res) {
+                    localStorage.clear();
+                    document.querySelector("#displayoff").style.display="none";
+                    show();
+                }).catch(function(err){
+                    console.log(err)
+                });
+            });
+
+            function ShowHideLabel(radio,ID) {
+                console.log("show called")
+                var st = document.querySelector('#todoname');
+                if(radio.checked==true)
+                {
+                    st.style.setProperty("text-decoration", "line-through");
+                    st.style.setProperty("color", "grey");
+                    document.querySelector("#clear").style.display="block";
+                    console.log("id",ID)
+                    var status = "Completed"
+                    updatestatus(ID,status)
+                }
+                else{
+                    st.style.setProperty("text-decoration", "none");
+                    document.querySelector("#clear").style.display="none";
+                    console.log("id",ID)
+                    var status = "Pending"
+                    updatestatus(ID,status)
+                }
+            }
+
+            function new_todo(name){
+                let data = {
+                    Name: name,
+                    Status: "Pending"
+                }
+                index++;
+                var str=JSON.stringify(data)
+                if(navigator.onLine==false)
+                {
+                    localStorage.setItem(index, str); //to store in local storage
+                    window.alert("You are offline and can only add and delete new data, data will be synced once you are online");
+                    show()
+                }
+                else{
+                fetch('/newtodo', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res) {
+                  // console.log(res)
+                }).catch(function(err){
+                    console.log(err)
+                });
+                setTimeout(show, 165);
+                }
+            }
+
+            function show(){
+                if(navigator.onLine==false){
+                var todo = [];
+                for (var i = 0; i<localStorage.length; i++) {
+                    todo[i] = JSON.parse(localStorage.getItem(localStorage.key(i)));
+                    console.log(todo[i])
+                }
+                let result = '<ul class="mycssdropdown">';
+                for (var i = 0; i<localStorage.length; i++) {
+                    result +=
+                        `<hr><li>
+                            <div class="radio">`
+                                if(todo[i].Status=="Pending"){   
+                                    result +=
+                                `<input type="checkbox" id="radio${localStorage.key(i)}" name="avalue" value="${todo[i].Name}" onclick="ShowHideLabel(this,${localStorage.key(i)})">
+                                <label id="todoname"> ${todo[i].Name} </label>`
+                                }
+                                else{
+                                    result +=
+                                `<input type="checkbox" id="radio${localStorage.key(i)}" name="avalue" value="${todo[i].Name}" checked="checked" onclick="ShowHideLabel(this,${todo.ID})">
+                                <label id="todoname" style="text-decoration:line-through;color:grey;">${todo[i].Name} </label>`
+                                }
+                                result += `<label id="exit${localStorage.key(i)}" class="exit" onclick="deleteo(${localStorage.key(i)})">&#10005;</label>
+                            </div></li>`
+                }
+                result += `</ul>`
+                document.querySelector('#displayoff').innerHTML = result;
+                document.querySelector('#displayoff').style.display='block';
+                document.querySelector('#count').style.display='none';
+                }
+                else{
+                fetch('/showtodo', {
+                    method: 'GET',
+                }).then(function(res) {
+                    return res.json()
+                }).then(function(data){
+                let result = '<ul class="mycssdropdown">';
+                if(data==null)
+                {
+                    result+=``;
+                    document.querySelector('#count').style.display='none';
+                    document.getElementById('display').innerHTML = result;
+                    return
+                }  
+                var count=0;          
+                data.map(function(todo) { 
+                    result +=
+                        `<hr><li>
+                            <div class="radio">`
+                                if(todo.Status=="Pending"){
+                                    if(todo.ID>index){index=todo.ID}
+                                    result +=
+                                `<input type="checkbox" id="radio${todo.ID}" name="avalue" value="${todo.Name}" onclick="ShowHideLabel(this,${todo.ID})">
+                                <label id="todoname" ondblclick="editlabel(this,${todo.ID})"> ${todo.Name} </label>
+                                <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
+                                count++;
+                                }
+                                else{
+                                    if(todo.ID>index){index=todo.ID}
+                                    result +=
+                                `<input type="checkbox" id="radio${todo.ID}" name="avalue" value="${todo.Name}" checked="checked" onclick="ShowHideLabel(this,${todo.ID})">
+                                <label id="todoname" style="text-decoration:line-through;color:grey;" ondblclick="editlabel(this,${todo.ID})">${todo.Name} </label>
+                                <input type="text" id="edit${todo.ID}" class="edit-input" size="15" value="${todo.Name}">`
+                                }
+                                if (todo.Image){
+                                result += `<label id="exit${todo.ID}" class="exit" onclick="deletetodo(${todo.ID})">&#10005;</label></li>
+                                <img src= 'image/${todo.ID}.jpg' id="img" width="50" height="50"/>
+                                <button name="submit"  class="change" id="changeimgbtn${todo.ID}" onclick="changeimg(${todo.ID})">Change Image</button>
+                                <div id="uploadimg${todo.ID}" style="display:none"><form action="./uploadimg?id=${todo.ID}" method="post" enctype="multipart/form-data" id=${todo.ID}>
+                                <input type="file" name="pic" id="pic${todo.ID}" accept="image/*" onchange="displayimg(${todo.ID})">
+                                <div id="imgTest${todo.ID}"></div><button name="submit" class="button">Upload Image</button></form></div></div>`
+                                }
+                                else{
+                                result += `<label id="exit${todo.ID}" class="exit" onclick="deletetodo(${todo.ID})">&#10005;</label></li>
+                                <div id="uploadimg${todo.ID}"><form action="./uploadimg?id=${todo.ID}" method="post" enctype="multipart/form-data" id=${todo.ID}>
+                                <input type="file" name="pic" id="pic${todo.ID}" accept="image/*" onchange="displayimg(${todo.ID})">
+                                <div id="imgTest${todo.ID}"></div><button name="submit">Upload Image</button></form></div></div>`
+                                }
+                                                        
+                    console.log(todo)
+                    console.log("no of entries",count)
+                })
+                result += `</ul>`
+                document.querySelector('#display').innerHTML = result;
+                document.querySelector('#count').innerHTML = count+" items left";
+                document.querySelector('#count').style.display='block';
+                }).catch(function(err){
+                    console.log(err)
+                });
+                }
+            }
+            function changeimg(ID){
+                document.querySelector('#uploadimg'+ID).style.display="block";
+                document.querySelector('#changeimgbtn'+ID).style.display="none";
+            }
+            function deleteo(ik){
+                localStorage.removeItem(ik);
+                show();
+            } 
+            function deletetodo(ID){
+                let data = {
+                    ID: ID
+                }
+                fetch('/deletetodo', {  
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                }).then(function(res){
+                    return res.json()
+                }).then(function(data){
+                    console.log("delete successful")
+                    show()
+                }).catch(function(err){
+                        console.log(err)
+                    });
+            }
+
+            function clrcomp(){
+                if(navigator.online==false){
+                    for (var i = 0; i<localStorage.length; i++) {
+                        if(localStorage.key(i).Status=="Completed")
+                        {
+                            localStorage.removeItem(localStorage.key(i));
+                        }
+                    }
+                }
+                else{
+                    fetch('/clrcomp', {
+                        method: 'GET',
+                    }).then(function(res) {
+                        return res.json()
+                    }).then(function(data){
+                        console.log("delete successful")
+                        show()
+                    }).catch(function(err){
+                            console.log(err)
+                        });
+                }
+            }
+
+            function updatestatus(ID,status){
+                console.log("id",ID)
+                let data = {
+                    ID: ID,
+                    Status: status
+                }
+                    fetch('/updatestatus',{
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                    }).then(function(res){
+                        //return res.json()
+                    }).then(function(data){
+                        show();
+                    }).catch(function(err){
+                            console.log(err)
+                    });
+            }
+
+            function editlabel(todoname,ID){
+                console.log("edit label called")
+                var r=document.querySelector('#radio'+ID);
+                r.style.display='none';
+                document.querySelector('#exit'+ID).style.display='none';
+                todoname.style.display='none';
+                var x = document.querySelector('#edit'+ID);
+                x.style.display='block';
+                x.style.highlight="block";     //display border
+                x.style.boxShadow = "0 0 5px grey";
+                x.style.padding = "3px 1px 3px 3px";
+                x.style.margin = "5px 1px 3px 0px";  
+                x.style.border = "1px solid grey";
+                x.focus();
+                x.addEventListener("keyup", function(event) {
+                    console.log("event listener called")
+                    if (event.key === 'Enter') {
+                        var data = event.target.value
+                        console.log("data",data)
+                        var name = data
+                        if(name!=""){
+                            console.log(name)
+                            let data = {
+                                Name:name,
+                                ID: ID
+                            }
+                            fetch('/updatetodo',{
+                                method: 'POST',
+                                body: JSON.stringify(data),
+                            }).then(function(res){
+                                //return res.json()
+                            }).then(function(data){
+                                show();
+                            }).catch(function(err){
+                                    console.log(err)
+                            });
+                        }
+                    }
+                });
+            }
+            function displayimg(ID){
+                var filesSelected = document.querySelector('#pic'+ID).files;
+                if (filesSelected.length > 0) {
+                var fileToLoad = filesSelected[0];
+
+                var fileReader = new FileReader();
+
+                fileReader.onload = function(fileLoadedEvent) {
+                    var srcData = fileLoadedEvent.target.result; // <--- data: base64
+
+                    var newImage = document.createElement('img');
+                    newImage.src = srcData;
+                    document.getElementById("imgTest"+ID).innerHTML = newImage.outerHTML;
+                    //alert("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
+                }
+                fileReader.readAsDataURL(fileToLoad);
+                }
+            }
+        </script>
+    </body>
+</html>
